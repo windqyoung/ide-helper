@@ -1,0 +1,16 @@
+{
+	"name" : "wqy/ide-helper",
+	"description" : "ide helper",
+	"type" : "library",
+	"authors" : [{
+			"name" : "windsor",
+			"email" : "txcses@gmail.com"
+		}
+	],
+    "autoload": {
+	   "psr-4": {
+	       "Wqy\\IdeHelper\\": "src"
+	   }
+	},
+	"minimum-stability" : "stable"
+}
