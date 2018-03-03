@@ -23,7 +23,7 @@ abstract class AbstractFunctionCode extends CodeBase
             . $this->getReturnType()
         ;
 
-        if ($ref->isAbstract()) {
+        if (method_exists($ref, 'isAbstract') && $ref->isAbstract()) {
             $code .= ";\n";
         }
         else {
