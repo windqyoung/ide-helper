@@ -46,8 +46,10 @@ if (! empty($opts['c'])) {
 }
 
 if (! empty($opts['e'])) {
+    $exts = [];
     foreach ((array) $opts['e'] as $one) {
-        $codes[] = new ExtensionCode(new ReflectionExtension($one));
+        $codes[] = new ExtensionCode($e = new ReflectionExtension($one));
+        $exts[] = sprintf("%s_%s", $e->getName(), $e->getVersion());
     }
 }
 
@@ -55,9 +57,19 @@ $codeStr = "<?php\n\n" . implode("\n", array_map(function ($one) {
     return $one->toCode([]);
 }, $codes));
 
-
-$file = empty($opts['o']) ? 'php://output' : $opts['o'];
+if (empty($opts['o'])) {
+    if (empty($exts)) {
+        $file = 'php://output';
+    }
+    else {
+        $file = '_ide_helper_' . implode('_', $exts) . '.php';
+    }
+}
+else {
+    $file = $opts['o'];
+}
 
 file_put_contents($file, $codeStr);
 
+echo $file, "\n";
 
