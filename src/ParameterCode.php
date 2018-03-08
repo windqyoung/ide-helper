@@ -19,12 +19,12 @@ class ParameterCode extends CodeBase implements ToCodeInterface
 
         $ref = $this->getRef();
 
-        if (method_exists($ref, 'isVariadic') && $ref->isVariadic()) {
-            $s .= '...';
-        }
-
         if ($ref->isPassedByReference()) {
             $s .= '& ';
+        }
+
+        if (method_exists($ref, 'isVariadic') && $ref->isVariadic()) {
+            $s .= '...';
         }
         $s .= '$' . $ref->getName();
 
