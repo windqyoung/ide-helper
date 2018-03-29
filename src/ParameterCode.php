@@ -67,7 +67,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
             } else {
                 $s .= ' = ' . var_export($ref->getDefaultValue(), true);
             }
-        } else if ($ref->allowsNull() && $ref->isOptional()) {
+        } else if ($ref->isOptional()) {
             $s .= ' = null';
         }
 
