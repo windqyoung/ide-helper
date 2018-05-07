@@ -1,17 +1,18 @@
 {
-	"name" : "wqy/ide-helper",
-	"description" : "ide helper, 生成PHP中的类, 函数, 常量, 等的代码结构, 以便ide能提示自动完成. 比如生成 phalcon框架, mongodb扩展的PHP代码",
-	"type" : "library",
-	"license" : "MIT",
-	"authors" : [{
-			"name" : "windsor",
-			"email" : "txcses@gmail.com"
-		}
-	],
-	"autoload" : {
-		"psr-4" : {
-			"Wqy\\IdeHelper\\" : "src"
-		}
-	},
-	"minimum-stability" : "stable"
+    "name" : "wqy/ide-helper",
+    "description" : "ide helper, 生成PHP中的类, 函数, 常量, 等的代码结构, 以便ide能提示自动完成. 比如生成 phalcon框架, mongodb扩展的PHP代码",
+    "type" : "library",
+    "license" : "MIT",
+    "authors" : [{
+            "name" : "windsor",
+            "email" : "txcses@gmail.com"
+        }
+    ],
+    "autoload" : {
+        "psr-4" : {
+            "Wqy\\IdeHelper\\" : "src"
+        }
+    },
+    "minimum-stability" : "stable",
+    "bin": ["bin/code.php"]
 }
