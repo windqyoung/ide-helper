@@ -62,7 +62,7 @@ if (empty($opts['o'])) {
         $file = 'php://output';
     }
     else {
-        $file = '_ide_helper_' . implode('_', $exts) . '.php';
+        $file = '_ide_helper_php_' . PHP_VERSION . '_' . implode('_', $exts) . '.php';
     }
 }
 else {

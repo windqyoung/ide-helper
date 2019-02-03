@@ -67,6 +67,8 @@ class ParameterCode extends CodeBase implements ToCodeInterface
             } else {
                 $s .= ' = ' . var_export($ref->getDefaultValue(), true);
             }
+        } else if (method_exists($ref, 'isVariadic') && $ref->isVariadic()) {
+            // 可变参数, 没默认值
         } else if ($ref->isOptional()) {
             $s .= ' = null';
         }
