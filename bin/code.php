@@ -5,27 +5,26 @@ use Wqy\IdeHelper\FunctionCode;
 use Wqy\IdeHelper\ClassCode;
 use Wqy\IdeHelper\ExtensionCode;
 
-$au = [
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/../../../autoload.php',
-];
+use Wqy\IdeHelper\Autoloader;
+
+require __DIR__ . '/../src/Autoloader.php';
 
 
-foreach ($au as $one) {
-    if (is_file($one)) {
-        $loader = require $one;
-    }
-}
-
-if (! isset($loader)) {
-    exit("autoload.php do not exists.\n");
-}
+Autoloader::register();
 
 $opts = getopt('f::c::e::o::h');
 
-if (isset($opts['h'])) {
+
+if (empty($opts) || isset($opts['h'])) {
     echo <<<HTML
-php code.php -ffunction -cclass -eextension -ooutputfile -hhelp
+Usage: php code.php [options ...]
+    -f <function>       save function
+    -c <class>          save class
+    -e <extension>      save extension's classes, interfaces, const,
+                            functions, ...
+    -o <outputfile>     save code to this file
+    -h                  show this help
+
 HTML;
 
     exit;
