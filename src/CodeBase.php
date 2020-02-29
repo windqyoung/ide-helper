@@ -93,15 +93,21 @@ class CodeBase
 
     public function wrapNamespace($code)
     {
-        $ns = method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
 
-        return 'namespace ' . $ns . " {\n\n"
+        return 'namespace ' . $this->getNamespaceName() . " {\n\n"
             . $code
             . "\n}\n";
     }
 
+    public function getNamespaceName()
+    {
+        $ns = method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
+        return $ns;
+    }
+
     /**
      * @param \ReflectionType $type
+     * @return string
      */
     public function getTypeString($type)
     {
