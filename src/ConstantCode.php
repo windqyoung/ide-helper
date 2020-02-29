@@ -10,13 +10,15 @@ class ConstantCode extends CodeBase implements ToCodeInterface
 
     public function __construct($name, $value)
     {
+        parent::__construct(null);
         $this->name = $name;
         $this->value = $value;
     }
 
     public function toCode($options = [])
     {
-        return $this->wrapNamespace($this->toDefineCode($options));
+        $code = $this->toDefineCode($options);
+        return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
     }
 
     public function toDefineCode($options = [])
