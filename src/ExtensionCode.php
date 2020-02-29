@@ -12,7 +12,9 @@ class ExtensionCode extends CodeBase implements ToCodeInterface
     {
         $ref = $this->getRef();
 
-        $codes = [new ExtensionInfoCode($ref)];
+        $info = new ExtensionInfoCode($ref);
+
+        $codes = [];
 
         foreach ($ref->getConstants() as $name => $value) {
             $codes[] = new ConstantCode($name, $value);
@@ -26,9 +28,10 @@ class ExtensionCode extends CodeBase implements ToCodeInterface
             $codes[] = new ClassCode($one);
         }
 
-        return implode("\n", array_map(function ($one) use ($options) {
-            return $one->toCode($options);
-        }, $codes));
+        // 在同一扩展中, 按命名空间进行分组生成代码
+        $group = new GroupByNamespaceCode($codes);
+
+        return $info->toCode($options) . "\n" . $group->toCode($options);
     }
 
 
