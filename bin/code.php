@@ -18,11 +18,11 @@ $opts = getopt('f::c::e::o::h');
 if (empty($opts) || isset($opts['h'])) {
     echo <<<HTML
 Usage: php code.php [options ...]
-    -f <function>       save function
-    -c <class>          save class
-    -e <extension>      save extension's classes, interfaces, const,
+    -f<function>       save function
+    -c<class>          save class
+    -e<extension>      save extension's classes, interfaces, const,
                             functions, ...
-    -o <outputfile>     save code to this file
+    -o<outputfile>     save code to this file
     -h                  show this help
 
 HTML;
