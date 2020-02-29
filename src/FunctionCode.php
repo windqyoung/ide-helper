@@ -9,7 +9,8 @@ class FunctionCode extends AbstractFunctionCode implements ToCodeInterface
 
     public function toCode($options = [])
     {
-        return $this->wrapNamespace($this->toFunctionCode($options));
+        $code = $this->toFunctionCode($options);
+        return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
     }
 
 }
