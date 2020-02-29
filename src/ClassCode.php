@@ -58,7 +58,11 @@ class ClassCode extends CodeBase implements ToCodeInterface
     {
         $ref = $this->getRef();
 
-        $imps = $ref->getInterfaceNames();
+        $impsRaw = $ref->getInterfaceNames();
+
+        // fix bug
+        // class Traversable can't implements
+        $imps = array_filter($impsRaw, function ($x) { return $x !== 'Traversable'; });
 
         if (! $imps) {
             return '';
