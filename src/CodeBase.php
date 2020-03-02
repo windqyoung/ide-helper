@@ -120,7 +120,12 @@ class CodeBase
             $ts .= '\\';
         }
 
-        $ts .= $type . ' ';
+        $typeStr = $type instanceof \ReflectionNamedType ? $type->getName() : ((string)$type);
+        // fix bug
+        // in parallel extension, the return type name has a prefix \
+        $typeStr = ltrim($typeStr, '\\');
+
+        $ts .= $typeStr . ' ';
 
         return $ts;
     }
