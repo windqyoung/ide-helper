@@ -15,4 +15,12 @@ class MethodCode extends AbstractFunctionCode implements ToCodeInterface
         return $this->toFunctionCode($options);
     }
 
+    protected function getFunctionReturnStatement($options)
+    {
+        $ref = $this->getRef();
+        if (strtolower($ref->getName()) == '__tostring') {
+            return "\n" . $this->getPrefixSpaces($this->getLevel($options) + 1) . "return '';\n";
+        }
+        return parent::getFunctionReturnStatement($options);
+    }
 }

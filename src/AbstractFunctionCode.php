@@ -6,7 +6,7 @@ namespace Wqy\IdeHelper;
 
 abstract class AbstractFunctionCode extends CodeBase
 {
-    public function toFunctionCode($options)
+    protected function toFunctionCode($options)
     {
         $ref = $this->getRef();
 
@@ -29,13 +29,13 @@ abstract class AbstractFunctionCode extends CodeBase
         else {
             $code .= "\n"
             . $pre . "{\n"
-            . $this->getStaticVariables($options)
+            . $this->getFunctionBody($options)
             . $pre . "}\n";
         }
 
         return $code;
     }
-    public function getReturnType()
+    private function getReturnType()
     {
         $ref = $this->getRef();
         if (! (method_exists($ref, 'hasReturnType') && $ref->hasReturnType())) {
@@ -50,14 +50,14 @@ abstract class AbstractFunctionCode extends CodeBase
 
         return ' : ' . $this->getTypeString($type);
     }
-    public function getStaticVariables($options)
+    private function getStaticVariables($options)
     {
         $stVars = $this->getRef()->getStaticVariables();
         if (empty($stVars)) {
             return '';
         }
 
-        $pre = $this->getPrefixSpaces($this->getLevel($options, 1) + 1);
+        $pre = $this->getPrefixSpaces($this->getLevel($options) + 1);
 
         $s = '';
         foreach ($stVars as $name => $val) {
@@ -67,10 +67,20 @@ abstract class AbstractFunctionCode extends CodeBase
         return $s;
     }
 
-    public function getParameters()
+    private function getParameters()
     {
         return implode(', ', array_map(function (\ReflectionParameter $one) {
             return (new ParameterCode($one))->toCode();
         }, $this->getRef()->getParameters()));
+    }
+
+    protected function getFunctionBody($options)
+    {
+        return $this->getStaticVariables($options) . $this->getFunctionReturnStatement($options);
+    }
+
+    protected function getFunctionReturnStatement($options)
+    {
+        return "\n" . $this->getPrefixSpaces($this->getLevel($options) + 1) . "return null;\n";
     }
 }

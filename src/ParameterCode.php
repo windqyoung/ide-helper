@@ -13,7 +13,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         ;
     }
 
-    public function getName()
+    private function getName()
     {
         $s = '';
 
@@ -31,7 +31,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         return $s;
     }
 
-    public function getType()
+    private function getType()
     {
         $ref = $this->getRef();
 
@@ -56,7 +56,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         return $s;
     }
 
-    public function getDefaultAssign($options = [])
+    protected function getDefaultAssign($options = [])
     {
         $s = '';
         $ref = $this->getRef();

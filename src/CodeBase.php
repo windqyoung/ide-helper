@@ -20,7 +20,7 @@ class CodeBase
         $this->ref = $ref;
     }
 
-    public function getLevel($levelOrOptions, $default)
+    protected function getLevel($levelOrOptions, $default = 1)
     {
         if (is_int($levelOrOptions)) {
             $level = $levelOrOptions;
@@ -35,12 +35,12 @@ class CodeBase
         return $level;
     }
 
-    public function getPrefixSpaces($levelOrOptions, $defaultLevel = 1)
+    protected function getPrefixSpaces($levelOrOptions, $defaultLevel = 1)
     {
         return str_repeat($this->prefixSpace, $this->getLevel($levelOrOptions, $defaultLevel));
     }
 
-    public function getModifier()
+    protected function getModifier()
     {
         if (method_exists($this->ref, 'getModifiers') && ($mods = $this->ref->getModifiers())) {
             return implode(' ', Reflection::getModifierNames($mods)) . ' ';
@@ -49,12 +49,12 @@ class CodeBase
         return '';
     }
 
-    public function getRef()
+    protected function getRef()
     {
         return $this->ref;
     }
 
-    public function getDefaultAssign($options)
+    protected function getDefaultAssign($options)
     {
         if (isset($options['defaultValue'])) {
             return ' = ' . var_export($options['defaultValue'], true);
@@ -62,7 +62,7 @@ class CodeBase
         return '';
     }
 
-    public function getDocComment($levelOrOptions, $defaultLevel = 1)
+    protected function getDocComment($levelOrOptions, $defaultLevel = 1)
     {
         if (! method_exists($this->ref, 'getDocComment')) {
             return '';
@@ -91,7 +91,7 @@ class CodeBase
         return $cmtFmt . "\n";
     }
 
-    public function wrapNamespace($code)
+    protected function wrapNamespace($code)
     {
 
         return 'namespace ' . $this->getNamespaceName() . " {\n\n"
@@ -109,7 +109,7 @@ class CodeBase
      * @param \ReflectionType $type
      * @return string
      */
-    public function getTypeString($type)
+    protected function getTypeString($type)
     {
         $ts = '';
 
@@ -130,7 +130,7 @@ class CodeBase
         return $ts;
     }
 
-    public function declaringInSameClass($options)
+    protected function declaringInSameClass($options)
     {
         return isset($options['declaringClass'])
             && $options['declaringClass'] == $this->getRef()->getDeclaringClass()->getName()
@@ -138,7 +138,7 @@ class CodeBase
 
     }
 
-    public function getShortName()
+    protected function getShortName()
     {
         $name = $this->ref->getShortName();
 
