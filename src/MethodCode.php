@@ -29,4 +29,19 @@ class MethodCode extends AbstractFunctionCode implements ToCodeInterface
 
         return parent::getFunctionReturnStatement($options);
     }
+
+    protected function getModifier()
+    {
+        /** @var \ReflectionMethod $ref */
+        $ref = $this->getRef();
+        $rc = $ref->getDeclaringClass();
+
+        // 接口不需要
+        if ($rc->isInterface()) {
+            return '';
+        }
+
+        return parent::getModifier();
+    }
+
 }
