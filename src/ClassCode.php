@@ -11,7 +11,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
     }
 
-    public function toClassCode($options)
+    private function toClassCode($options)
     {
         $pre = $this->getPrefixSpaces($options);
 
@@ -29,7 +29,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         ;
     }
 
-    public function getClassKeyword()
+    private function getClassKeyword()
     {
         $ref = $this->getRef();
 
@@ -44,7 +44,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         return ($ref->isAbstract() ? 'abstract ' : '') . 'class ';
     }
 
-    public function getExtends()
+    private function getExtends()
     {
         $p = $this->getRef()->getParentClass();
 
@@ -55,7 +55,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         return '';
     }
 
-    public function getImplements()
+    private function getImplements()
     {
         $ref = $this->getRef();
 
@@ -75,9 +75,9 @@ class ClassCode extends CodeBase implements ToCodeInterface
             }, $imps));
     }
 
-    public function toClassBody($options)
+    private function toClassBody($options)
     {
-        $options['level'] = $this->getLevel($options, 1) + 1;
+        $options['level'] = $this->getLevel($options) + 1;
 
         return $this->getTraits($options)
             . $this->getConstants($options)
@@ -86,7 +86,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         ;
     }
 
-    public function getTraits($options)
+    private function getTraits($options)
     {
         $ts = $this->getRef()->getTraitNames();
 
@@ -99,7 +99,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         }, $ts)) . ";\n\n";
 
     }
-    public function getConstants($options)
+    private function getConstants($options)
     {
         $cons = $this->getRef()->getConstants();
 
@@ -120,7 +120,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
     }
 
 
-    public function getProperties($options)
+    private function getProperties($options)
     {
         $ref = $this->getRef();
 
@@ -151,7 +151,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
     }
 
 
-    public function getMethods($options)
+    private function getMethods($options)
     {
         $ref = $this->getRef();
         $mds = $ref->getMethods();

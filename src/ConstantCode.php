@@ -21,7 +21,7 @@ class ConstantCode extends CodeBase implements ToCodeInterface
         return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
     }
 
-    public function toDefineCode($options = [])
+    private function toDefineCode($options = [])
     {
         return sprintf("%sdefine('%s', %s);\n", $this->getPrefixSpaces($options),
             $this->name, var_export($this->value, true));
