@@ -24,9 +24,14 @@ class ExtensionCode extends CodeBase implements ToCodeInterface
             $codes[] = new FunctionCode($one);
         }
 
+        // fix bug
+        // 在swoole扩展的输出中, 类重复了.
+        // 使用类名当键过滤一下重复类
+        $classCodes = [];
         foreach ($ref->getClasses() as $one) {
-            $codes[] = new ClassCode($one);
+            $classCodes[$one->getName()] = new ClassCode($one);
         }
+        $codes = array_merge($codes, array_values($classCodes));
 
         // 在同一扩展中, 按命名空间进行分组生成代码
         $group = new GroupByNamespaceCode($codes);
