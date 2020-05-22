@@ -70,5 +70,6 @@ else {
 
 file_put_contents($file, $codeStr);
 
-echo $file, "\n";
+// 文件名输出到2号fd
+fwrite(STDERR, $file . "\n");
 
