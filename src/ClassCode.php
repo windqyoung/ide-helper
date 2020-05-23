@@ -8,7 +8,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
     public function toCode($options = [])
     {
         $code = $this->toClassCode($options);
-        return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
+        return isset($options['namespace']) && $options['namespace'] === false ? $code : $this->wrapNamespace($code);
     }
 
     private function toClassCode($options)
