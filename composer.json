@@ -1,5 +1,5 @@
 {
-    "name" : "wqy/ide-helper",
+    "name" : "windqyoung/ide-helper",
     "description" : "ide helper, 生成PHP中的类, 函数, 常量, 等的代码结构, 以便ide能提示自动完成. 比如生成 phalcon框架, mongodb扩展的PHP代码",
     "type" : "library",
     "license" : "MIT",
