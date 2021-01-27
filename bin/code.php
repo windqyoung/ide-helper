@@ -9,6 +9,7 @@ use Wqy\IdeHelper\Autoloader;
 
 require __DIR__ . '/../src/Autoloader.php';
 
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 Autoloader::register();
 

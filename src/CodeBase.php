@@ -163,7 +163,7 @@ class CodeBase
 
     public function getNamespaceName()
     {
-        return method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
+        return $this->ref && method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
     }
 
     /**
