@@ -21,7 +21,7 @@ class GroupByNamespaceCode implements ToCodeInterface
         $this->codes = $codes;
     }
 
-    function toCode($options)
+    function toCode()
     {
         // 按命名空间分组
         $grpCodes = $this->groupByNs($this->codes);
@@ -29,14 +29,18 @@ class GroupByNamespaceCode implements ToCodeInterface
         $rt = '';
 
         foreach ($grpCodes as $ns => $codes) {
+
+            $ns = $ns ? $ns : '/* GLOBAL NAMESPACE */';
             // 在每组前后加上命名空间信息
             $rt .= "\nnamespace $ns {\n\n";
 
             // 组内的代码不加命名空间
-            $rt .= implode("\n\n", array_map(function ($one) use ($options) {
-                $options['namespace'] = false;
+            $rt .= implode("\n\n", array_map(function ($codeOne) {
                 /** @var CodeBase $one */
-                return $one->toCode($options);
+                $one = clone $codeOne;
+                $one->setWrapWithNamespace(false);
+
+                return $one->toCode();
             }, $codes));
 
             $rt .= "\n}\n";

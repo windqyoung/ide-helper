@@ -8,19 +8,63 @@ use Reflection;
 class CodeBase
 {
     /**
-     * @var \ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionFunction|\ReflectionParameter|\ReflectionExtension
+     * @var \ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionFunction|\ReflectionParameter|\ReflectionExtension|\ReflectionAttribute|\ReflectionAttribute[]|\ReflectionParameter[]
      */
     private $ref;
 
+    /**
+     * 每一级的缩进
+     * @var string
+     */
     private $prefixSpace = '    ';
 
+    /**
+     * 缩进等级
+     * @var integer
+     */
+    private $level = 1;
 
-    public function __construct($ref)
+    /**
+     * @var mixed
+     */
+    private $defaultValue;
+
+    /**
+     * @var string
+     */
+    private $declaringClass;
+
+    /**
+     * @var boolean
+     */
+    private $wrapWithNamespace = true;
+
+    public function __construct($ref, $options = [])
     {
         $this->ref = $ref;
+
+        $this->setLevel($options);
+        $this->setDefaultValue($options);
+        $this->setDeclaringClass($options);
     }
 
-    protected function getLevel($levelOrOptions, $default = 1)
+    /**
+     * @return boolean
+     */
+    public function isWrapWithNamespace()
+    {
+        return $this->wrapWithNamespace;
+    }
+
+    /**
+     * @param boolean $wrapWithNamespace
+     */
+    public function setWrapWithNamespace($wrapWithNamespace)
+    {
+        $this->wrapWithNamespace = $wrapWithNamespace;
+    }
+
+    public function setLevel($levelOrOptions, $default = 1)
     {
         if (is_int($levelOrOptions)) {
             $level = $levelOrOptions;
@@ -32,12 +76,20 @@ class CodeBase
             $level = $default;
         }
 
-        return $level;
+        return $this->level = $level;
     }
 
-    protected function getPrefixSpaces($levelOrOptions, $defaultLevel = 1)
+    public function getLevel()
     {
-        return str_repeat($this->prefixSpace, $this->getLevel($levelOrOptions, $defaultLevel));
+        return $this->level;
+    }
+
+    public function getPrefixSpaces($level = null)
+    {
+        if (is_null($level)) {
+            $level = $this->getLevel();
+        }
+        return str_repeat($this->prefixSpace, $level);
     }
 
     protected function getModifier()
@@ -49,20 +101,31 @@ class CodeBase
         return '';
     }
 
-    protected function getRef()
+    public function getRef()
     {
         return $this->ref;
     }
 
-    protected function getDefaultAssign($options)
+    public function setDefaultValue($options, $raw = false)
     {
-        if (isset($options['defaultValue'])) {
-            return ' = ' . var_export($options['defaultValue'], true);
+        if ($raw) {
+            $this->defaultValue = $options;
         }
-        return '';
+        else if (isset($options['defaultValue'])) {
+            $this->defaultValue = $options['defaultValue'];
+        }
     }
 
-    protected function getDocComment($levelOrOptions, $defaultLevel = 1)
+    protected function getDefaultAssign()
+    {
+        if (method_exists($ref = $this->getRef(), 'getDefaultValue')) {
+            return ' = ' . var_export($ref->getDefaultValue(), true);
+        }
+
+        return is_null($this->defaultValue) ? '' : (' = ' . var_export($this->defaultValue, true));
+    }
+
+    public function getDocComment()
     {
         if (! method_exists($this->ref, 'getDocComment')) {
             return '';
@@ -74,7 +137,7 @@ class CodeBase
             return '';
         }
 
-        $prefix = $this->getPrefixSpaces($levelOrOptions, $defaultLevel);
+        $prefix = $this->getPrefixSpaces();
 
         $cmtFmt = implode("\n", array_map(function ($one) use ($prefix) {
             $l = ltrim($one);
@@ -91,9 +154,8 @@ class CodeBase
         return $cmtFmt . "\n";
     }
 
-    protected function wrapNamespace($code)
+    public function wrapNamespace($code)
     {
-
         return 'namespace ' . $this->getNamespaceName() . " {\n\n"
             . $code
             . "\n}\n";
@@ -101,44 +163,28 @@ class CodeBase
 
     public function getNamespaceName()
     {
-        $ns = method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
-        return $ns;
+        return method_exists($this->ref, 'getNamespaceName') ? $this->ref->getNamespaceName() : '';
     }
 
     /**
-     * @param \ReflectionType $type
-     * @return string
+     * @param string $declaringClass
      */
-    protected function getTypeString($type)
+    public function setDeclaringClass($options, $raw= false)
     {
-        $ts = '';
-
-        if ($type->allowsNull()) {
-            $ts .= '?';
+        if ($raw) {
+            $this->declaringClass = $options;
         }
-        if (! $type->isBuiltin()) {
-            $ts .= '\\';
+        else if (isset($options['declaringClass'])) {
+            $this->declaringClass = $options['declaringClass'];
         }
-
-        $typeStr = $type instanceof \ReflectionNamedType ? $type->getName() : ((string)$type);
-        // fix bug
-        // in parallel extension, the return type name has a prefix \
-        $typeStr = ltrim($typeStr, '\\');
-
-        $ts .= $typeStr . ' ';
-
-        return $ts;
     }
 
-    protected function declaringInSameClass($options)
+    public function declaringInSameClass()
     {
-        return isset($options['declaringClass'])
-            && $options['declaringClass'] == $this->getRef()->getDeclaringClass()->getName()
-        ;
-
+        return $this->declaringClass == $this->getRef()->getDeclaringClass()->getName();
     }
 
-    protected function getShortName()
+    public function getShortName()
     {
         $name = $this->ref->getShortName();
 
@@ -147,5 +193,35 @@ class CodeBase
         }
 
         return $name;
+    }
+
+    /**
+     * @param \ReflectionType $type
+     * @return string
+     */
+    public function getTypeString($type)
+    {
+        return (new TypeCode($type, $this->getOptions()))->toCode();
+    }
+
+    public function getOptions()
+    {
+        return [
+            'level' => $this->getLevel(),
+        ];
+    }
+
+    public function hasAttributes()
+    {
+        return method_exists($this->ref, 'getAttributes') && $this->ref->getAttributes();
+    }
+
+    public function getAttributesString()
+    {
+        if (! method_exists($this->ref, 'getAttributes')) {
+            return '';
+        }
+
+        return (new AttributeArrayCode($this->ref->getAttributes(), $this->getOptions()))->toCode();
     }
 }

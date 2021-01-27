@@ -5,9 +5,15 @@ namespace Wqy\IdeHelper;
 
 class ParameterCode extends CodeBase implements ToCodeInterface
 {
-    public function toCode($options = [])
+    public function toCode()
     {
-        return $this->getType()
+        $code = '';
+        if ($this->hasAttributes()) {
+            $code .= $this->getAttributesString() . $this->getPrefixSpaces();
+        }
+
+        return $code
+            . $this->getType()
             . $this->getName()
             . $this->getDefaultAssign()
         ;
@@ -56,7 +62,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         return $s;
     }
 
-    protected function getDefaultAssign($options = [])
+    protected function getDefaultAssign()
     {
         $s = '';
         $ref = $this->getRef();

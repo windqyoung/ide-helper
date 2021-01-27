@@ -15,15 +15,15 @@ class ConstantCode extends CodeBase implements ToCodeInterface
         $this->value = $value;
     }
 
-    public function toCode($options = [])
+    public function toCode()
     {
-        $code = $this->toDefineCode($options);
-        return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
+        $code = $this->toDefineCode();
+        return $this->isWrapWithNamespace() ? $this->wrapNamespace($code) : $code;
     }
 
-    private function toDefineCode($options = [])
+    private function toDefineCode()
     {
-        return sprintf("%sdefine('%s', %s);\n", $this->getPrefixSpaces($options),
+        return sprintf("%sdefine('%s', %s);\n", $this->getPrefixSpaces(),
             $this->name, var_export($this->value, true));
     }
 }

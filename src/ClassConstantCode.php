@@ -6,21 +6,22 @@ use ReflectionClassConstant;
 
 class ClassConstantCode extends CodeBase implements ToCodeInterface
 {
-    public function __construct($cls, $name)
+    public function __construct($cls, $name, $options = [])
     {
         $ref = class_exists(\ReflectionClassConstant::class)
             ? new \ReflectionClassConstant($cls, $name) : new ClassConstant($cls, $name);
-        parent::__construct($ref);
+        parent::__construct($ref, $options);
     }
 
-    public function toCode($options = [])
+    public function toCode()
     {
-        if (! $this->declaringInSameClass($options)) {
+        if (! $this->declaringInSameClass()) {
             return '';
         }
 
-        return $this->getDocComment($options)
-            . $this->getPrefixSpaces($options)
+        return $this->getDocComment()
+            . $this->getAttributesString()
+            . $this->getPrefixSpaces()
             . $this->getModifier()
             . 'const '
             . $this->getRef()->getName()

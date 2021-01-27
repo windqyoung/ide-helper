@@ -5,5 +5,5 @@ namespace Wqy\IdeHelper;
 
 interface ToCodeInterface
 {
-    function toCode($options);
+    function toCode();
 }

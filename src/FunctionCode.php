@@ -7,10 +7,11 @@ namespace Wqy\IdeHelper;
 class FunctionCode extends AbstractFunctionCode implements ToCodeInterface
 {
 
-    public function toCode($options = [])
+    public function toCode()
     {
-        $code = $this->toFunctionCode($options);
-        return ! empty($options['namespace']) ? $this->wrapNamespace($code) : $code;
+        $code = $this->toFunctionCode();
+        $wrap = $this->isWrapWithNamespace();
+        return $wrap ? $this->wrapNamespace($code) : $code;
     }
 
 }

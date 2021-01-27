@@ -6,14 +6,14 @@ namespace Wqy\IdeHelper;
 
 abstract class AbstractFunctionCode extends CodeBase
 {
-    protected function toFunctionCode($options)
+    protected function toFunctionCode()
     {
         $ref = $this->getRef();
 
-        $pre = $this->getPrefixSpaces($options);
-        $code = $this->getDocComment($options)
-            . $pre
-            . $this->getModifier()
+        $pre = $this->getPrefixSpaces();
+        $code = $this->getDocComment()
+            . $this->getAttributesString()
+            . $pre . $this->getModifier()
             . ($ref->returnsReference() ? '& ' : '')
             . 'function '
             . $this->getShortName()
@@ -29,20 +29,42 @@ abstract class AbstractFunctionCode extends CodeBase
         else {
             $code .= "\n"
             . $pre . "{\n"
-            . $this->getFunctionBody($options)
+            . $this->getFunctionBody()
             . $pre . "}\n";
         }
 
         return $code;
     }
-    private function getReturnType()
+
+    private function hasReturnType($typeName = null)
     {
         $ref = $this->getRef();
-        if (! (method_exists($ref, 'hasReturnType') && $ref->hasReturnType())) {
+        // 无方法
+        if (! method_exists($ref, 'hasReturnType')) {
+            return false;
+        }
+
+        // 无返回
+        if (! $ref->hasReturnType() ) {
+            return false;
+        }
+
+        // 有返回, 不判断名字
+        if (is_null($typeName)) {
+            return true;
+        }
+
+        return (new TypeCode($ref->getReturnType()))->hasType($typeName);
+
+    }
+
+    private function getReturnType()
+    {
+        if (! $this->hasReturnType()) {
             return '';
         }
 
-        $type = $ref->getReturnType();
+        $type = $this->getRef()->getReturnType();
 
         if (! $type) {
             return '';
@@ -50,14 +72,15 @@ abstract class AbstractFunctionCode extends CodeBase
 
         return ' : ' . $this->getTypeString($type);
     }
-    private function getStaticVariables($options)
+
+    private function getStaticVariables()
     {
         $stVars = $this->getRef()->getStaticVariables();
         if (empty($stVars)) {
             return '';
         }
 
-        $pre = $this->getPrefixSpaces($this->getLevel($options) + 1);
+        $pre = $this->getPrefixSpaces($this->getLevel() + 1);
 
         $s = '';
         foreach ($stVars as $name => $val) {
@@ -69,18 +92,23 @@ abstract class AbstractFunctionCode extends CodeBase
 
     private function getParameters()
     {
-        return implode(', ', array_map(function (\ReflectionParameter $one) {
-            return (new ParameterCode($one))->toCode();
-        }, $this->getRef()->getParameters()));
+        return (new ParameterArrayCode($this->getRef()->getParameters(), $this->getOptions()))->toCode();
     }
 
-    protected function getFunctionBody($options)
+    protected function getFunctionBody()
     {
-        return $this->getStaticVariables($options) . $this->getFunctionReturnStatement($options);
+        return $this->getStaticVariables() . $this->getFunctionReturnStatement();
     }
 
-    protected function getFunctionReturnStatement($options)
+    protected function getFunctionReturnStatement()
     {
-        return "\n" . $this->getPrefixSpaces($this->getLevel($options) + 1) . "return null;\n";
+        if (! $this->hasReturnType()) {
+            return '';
+        }
+        if ($this->hasReturnType('void')) {
+            return '';
+        }
+
+        return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "return null;\n";
     }
 }

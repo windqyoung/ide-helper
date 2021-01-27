@@ -5,26 +5,25 @@ namespace Wqy\IdeHelper;
 
 class ClassCode extends CodeBase implements ToCodeInterface
 {
-    public function toCode($options = [])
+    public function toCode()
     {
-        $code = $this->toClassCode($options);
-        return isset($options['namespace']) && $options['namespace'] === false ? $code : $this->wrapNamespace($code);
+        $code = $this->toClassCode();
+        return $this->isWrapWithNamespace() ? $this->wrapNamespace($code) : $code;
     }
 
-    private function toClassCode($options)
+    private function toClassCode()
     {
-        $pre = $this->getPrefixSpaces($options);
+        $pre = $this->getPrefixSpaces();
 
-        $ref = $this->getRef();
-
-        return $this->getDocComment($options)
+        return $this->getDocComment()
+            . $this->getAttributesString()
             . $pre
             . $this->getClassKeyword()
             . $this->getShortName()
             . $this->getExtends()
             . $this->getImplements()
             . "\n$pre{\n"
-            . $this->toClassBody($options)
+            . $this->toClassBody()
             . "$pre}\n"
         ;
     }
@@ -75,18 +74,16 @@ class ClassCode extends CodeBase implements ToCodeInterface
             }, $imps));
     }
 
-    private function toClassBody($options)
+    private function toClassBody()
     {
-        $options['level'] = $this->getLevel($options) + 1;
-
-        return $this->getTraits($options)
-            . $this->getConstants($options)
-            . $this->getProperties($options)
-            . $this->getMethods($options)
+        return $this->getTraits()
+            . $this->getConstants()
+            . $this->getProperties()
+            . $this->getMethods()
         ;
     }
 
-    private function getTraits($options)
+    private function getTraits()
     {
         $ts = $this->getRef()->getTraitNames();
 
@@ -94,12 +91,12 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return '';
         }
 
-        return $this->getPrefixSpaces($options) . 'use ' . implode(', ', array_map(function ($one) {
+        return $this->getPrefixSpaces($this->getLevel() + 1) . 'use ' . implode(', ', array_map(function ($one) {
             return '\\' . $one;
         }, $ts)) . ";\n\n";
 
     }
-    private function getConstants($options)
+    private function getConstants()
     {
         $cons = $this->getRef()->getConstants();
 
@@ -107,20 +104,19 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return '';
         }
 
-        $cls = $this->getRef()->getName();
+        return implode("\n", array_filter(array_map(function ($name) {
 
-        $options['declaringClass'] = $cls;
+            $c = new ClassConstantCode($this->getRef()->getName(), $name, $this->getOptions());
+            $c->setDeclaringClass($this->getRef()->getName(), true);
+            $c->setLevel($this->getLevel() + 1);
 
-        return implode("\n", array_filter(array_map(function ($name) use ($cls, $options) {
-
-            $c = new ClassConstantCode($cls, $name);
-            return $c->toCode($options);
+            return $c->toCode();
 
         }, array_keys($cons)))) . "\n\n";
     }
 
 
-    private function getProperties($options)
+    private function getProperties()
     {
         $ref = $this->getRef();
 
@@ -130,28 +126,28 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return '';
         }
 
-        $cls = $ref->getName();
-
-        $options['declaringClass'] = $cls;
-
         $defs = $ref->getDefaultProperties();
 
-        return implode("\n", array_filter(array_map(function (\ReflectionProperty $one) use ($options, $defs) {
+        $cls = $ref->getName();
+
+        return implode("\n", array_filter(array_map(function (\ReflectionProperty $one) use ($defs, $cls) {
 
             $name = $one->getName();
 
+            $c = new PropertyCode($one, $this->getOptions());
+            $c->setDeclaringClass($cls, true);
+            $c->setLevel($this->getLevel() + 1);
             if (isset($defs[$name]) && !is_null($defs[$name])) {
-                $options['defaultValue'] = $defs[$name];
+                $c->setDefaultValue($defs[$name], true);
             }
 
-            $c = new PropertyCode($one);
-            return $c->toCode($options);
+            return $c->toCode();
 
         }, $props))) . "\n\n";
     }
 
 
-    private function getMethods($options)
+    private function getMethods()
     {
         $ref = $this->getRef();
         $mds = $ref->getMethods();
@@ -162,12 +158,12 @@ class ClassCode extends CodeBase implements ToCodeInterface
 
         $cls = $ref->getName();
 
-        $options['declaringClass'] = $cls;
+        return implode("\n", array_filter(array_map(function (\ReflectionMethod $one) use ($cls) {
 
-        return implode("\n", array_filter(array_map(function (\ReflectionMethod $one) use ($options) {
-
-            $c = new MethodCode($one);
-            return $c->toCode($options);
+            $c = new MethodCode($one, $this->getOptions());
+            $c->setDeclaringClass($cls, true);
+            $c->setLevel($this->getLevel() + 1);
+            return $c->toCode();
 
         }, $mds)));
     }

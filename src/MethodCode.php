@@ -6,28 +6,28 @@ namespace Wqy\IdeHelper;
 class MethodCode extends AbstractFunctionCode implements ToCodeInterface
 {
 
-    public function toCode($options = [])
+    public function toCode()
     {
-        if (! $this->declaringInSameClass($options)) {
+        if (! $this->declaringInSameClass()) {
             return '';
         }
 
-        return $this->toFunctionCode($options);
+        return $this->toFunctionCode();
     }
 
-    protected function getFunctionReturnStatement($options)
+    protected function getFunctionReturnStatement()
     {
         $ref = $this->getRef();
         $name = strtolower($ref->getName());
 
         if ($name == '__tostring') {
-            return "\n" . $this->getPrefixSpaces($this->getLevel($options) + 1) . "return '';\n";
+            return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "return '';\n";
         }
         else if ($name == '__construct') {
             return "";
         }
 
-        return parent::getFunctionReturnStatement($options);
+        return parent::getFunctionReturnStatement();
     }
 
     protected function getModifier()

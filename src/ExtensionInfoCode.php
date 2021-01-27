@@ -7,7 +7,7 @@ class ExtensionInfoCode extends CodeBase implements ToCodeInterface
     /**
      * helo*\/world
      */
-    public function toCode($options = [])
+    public function toCode()
     {
         $ref = $this->getRef();
 
