@@ -8,7 +8,7 @@ class ClassConstantCode extends CodeBase implements ToCodeInterface
 {
     public function __construct($cls, $name, $options = [])
     {
-        $ref = class_exists(\ReflectionClassConstant::class)
+        $ref = class_exists('ReflectionClassConstant')
             ? new \ReflectionClassConstant($cls, $name) : new ClassConstant($cls, $name);
         parent::__construct($ref, $options);
     }
