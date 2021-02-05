@@ -32,9 +32,18 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         if (method_exists($ref, 'isVariadic') && $ref->isVariadic()) {
             $s .= '...';
         }
-        $s .= '$' . $ref->getName();
+        $s .= '$' . $this->toValidName($ref->getName());
 
         return $s;
+    }
+
+    private $placeIndex = 0;
+
+    private function toValidName($name) {
+        if (! preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)) {
+            return '____args_' . $this->placeIndex++ . "/* name = $name */";
+        }
+        return $name;
     }
 
     private function getType()
