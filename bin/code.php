@@ -13,12 +13,13 @@ error_reporting(E_ALL & ~E_DEPRECATED);
 
 Autoloader::register();
 
-$opts = getopt('f::c::e::o::h');
+$opts = getopt('p::f::c::e::o::h');
 
 
 if (empty($opts) || isset($opts['h'])) {
     echo <<<HTML
 Usage: php code.php [options ...]
+    -p<pre_include>    pre include files
     -f<function>       save function
     -c<class>          save class
     -e<extension>      save extension's classes, interfaces, const,
@@ -29,6 +30,17 @@ Usage: php code.php [options ...]
 HTML;
 
     exit;
+}
+
+if (! empty($opts['p'])) {
+    foreach ((array)$opts['p'] as $pi) {
+        if (is_file($pi)) {
+            include $pi;
+        } else {
+            fwrite(STDERR, "file $pi not exits\n");
+            exit;
+        }
+    }
 }
 
 $codes = [];
