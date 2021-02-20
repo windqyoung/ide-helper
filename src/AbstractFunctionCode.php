@@ -60,6 +60,12 @@ abstract class AbstractFunctionCode extends CodeBase
 
     private function getReturnType()
     {
+        $t = $this->getReturnTypeString();
+        return $t ? (' : ' . $t) : $t;
+    }
+
+    private function getReturnTypeString()
+    {
         if (! $this->hasReturnType()) {
             return '';
         }
@@ -70,7 +76,7 @@ abstract class AbstractFunctionCode extends CodeBase
             return '';
         }
 
-        return ' : ' . $this->getTypeString($type);
+        return $this->getTypeString($type);
     }
 
     private function getStaticVariables()
@@ -110,5 +116,21 @@ abstract class AbstractFunctionCode extends CodeBase
         }
 
         return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "return null;\n";
+    }
+
+    public function getDocCommentSign($pre, $withAtProperty = true, $withAtSee = true)
+    {
+        $name = $this->getRef()->getName();
+        $sign = sprintf('%s%s(%s)', $this->getReturnTypeString(), $this->getShortName(), $this->getParameters());
+
+        if (! $withAtProperty) {
+            return $sign;
+        }
+
+        $rt = "$pre * @method $sign\n";
+        if ($withAtSee) {
+            $rt .= sprintf("$pre * @see \\%s::%s()\n", $this->getRef()->getDeclaringClass()->getName(), $name);
+        }
+        return $rt;
     }
 }

@@ -36,4 +36,27 @@ class PropertyCode extends CodeBase implements ToCodeInterface
         return $this->getTypeString($ref->getType());
     }
 
+    public function getDocCommentSign($pre, $withAtProperty = true, $withAtSee = true)
+    {
+        $name = $this->getRef()->getName();
+        $sign = $this->getPropertyTypeString() . '$' . $name;
+
+        if (! $withAtProperty) {
+            return $sign;
+        }
+
+        $rt = "$pre * @property $sign\n";
+        if ($withAtSee) {
+            $rt .= sprintf("$pre * @see \\%s::\$%s\n", $this->getRef()->getDeclaringClass()->getName(), $name);
+        }
+        return $rt;
+    }
 }
+
+
+
+
+
+
+
+
