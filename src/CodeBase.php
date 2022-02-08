@@ -119,6 +119,12 @@ class CodeBase
     protected function getDefaultAssign()
     {
         if (method_exists($ref = $this->getRef(), 'getDefaultValue')) {
+            $def = $ref->getDefaultValue();
+
+            // 如果是null, 不赋值
+            if (is_null($def)) {
+                return '';
+            }
             return ' = ' . var_export($ref->getDefaultValue(), true);
         }
 
