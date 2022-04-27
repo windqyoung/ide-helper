@@ -103,7 +103,10 @@ abstract class AbstractFunctionCode extends CodeBase
 
     protected function getFunctionBody()
     {
-        return $this->getStaticVariables() . $this->getFunctionReturnStatement();
+        return $this->generatorYield()
+            . $this->getStaticVariables()
+            . $this->getPrototypeString()
+            . $this->getFunctionReturnStatement();
     }
 
     protected function getFunctionReturnStatement()
@@ -132,5 +135,30 @@ abstract class AbstractFunctionCode extends CodeBase
             $rt .= sprintf("$pre * @see \\%s::%s()\n", $this->getRef()->getDeclaringClass()->getName(), $name);
         }
         return $rt;
+    }
+
+    private function generatorYield()
+    {
+        $ref = $this->getRef();
+        if ($ref->isGenerator()) {
+            return $this->getPrefixSpaces($this->getLevel() + 1) . "/* 此函数是生成器 */ yield;\n";
+        }
+        return '';
+    }
+
+    private function getPrototypeString()
+    {
+        try {
+            $proto = $this->getRef()->getPrototype();
+            $see = '\\' . $proto->getDeclaringClass()->getName() . '::' . $proto->getName() . '()';
+            $prefix = $this->getPrefixSpaces($this->getLevel() + 1);
+            return "$prefix/**\n$prefix * @see {$see}\n$prefix */\n";
+        }
+        catch (\Exception $e) {
+            return '';
+        }
+        catch (\Throwable $e) {
+            return '';
+        }
     }
 }
