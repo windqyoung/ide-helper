@@ -40,7 +40,16 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return 'trait ';
         }
 
-        return ($ref->isAbstract() ? 'abstract ' : '') . 'class ';
+        $code = 'class ';
+
+        if ($ref->isAbstract()) {
+            $code = 'abstract ' . $code;
+        }
+        if ($ref->isFinal()) {
+            $code = 'final ' . $code;
+        }
+
+        return $code;
     }
 
     private function getExtends()
@@ -131,19 +140,26 @@ class ClassCode extends CodeBase implements ToCodeInterface
         $cls = $ref->getName();
 
         return implode("\n", array_filter(array_map(function (\ReflectionProperty $one) use ($defs, $cls) {
-
-            $name = $one->getName();
-
-            $c = new PropertyCode($one, $this->getOptions());
-            $c->setDeclaringClass($cls, true);
-            $c->setLevel($this->getLevel() + 1);
-            if (isset($defs[$name]) && !is_null($defs[$name])) {
-                $c->setDefaultValue($defs[$name], true);
-            }
-
-            return $c->toCode();
-
+            return $this->getClassPropertyCode($one, $cls, $defs);
         }, $props))) . "\n\n";
+    }
+
+    private function getClassPropertyCode(\ReflectionProperty $one, $cls, $defs)
+    {
+        // 如果是构造方法提升, 则忽略此属属
+        if (method_exists($one, 'isPromoted') && $one->isPromoted()) {
+            return '';
+        }
+        $name = $one->getName();
+
+        $c = new PropertyCode($one, $this->getOptions());
+        $c->setDeclaringClass($cls, true);
+        $c->setLevel($this->getLevel() + 1);
+        if (isset($defs[$name]) && !is_null($defs[$name])) {
+            $c->setDefaultValue($defs[$name], true);
+        }
+
+        return $c->toCode();
     }
 
 
