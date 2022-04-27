@@ -12,7 +12,10 @@ class TypeCode extends CodeBase implements ToCodeInterface
 
         // php8 联合类型
         if ($type instanceof \ReflectionUnionType) {
-            return $this->getUnionTypeString($type);
+            return $this->getMultiTypeString($type, '|');
+        }
+        if ($type instanceof \ReflectionIntersectionType) {
+            return $this->getMultiTypeString($type, '&');
         }
 
         return $this->getNamedTypeString($type);
@@ -45,11 +48,11 @@ class TypeCode extends CodeBase implements ToCodeInterface
     }
 
     /**
-     * @param \ReflectionUnionType $type
+     * @param \ReflectionUnionType|\ReflectionIntersectionType $type
      */
-    private function getUnionTypeString($type)
+    private function getMultiTypeString($type, $glue)
     {
-        return implode('|', $type->getTypes()) . ' ';
+        return implode($glue, array_map(fn($one) => '\\' . $one, $type->getTypes())) . ' ';
     }
 
     public function hasType($typeName)
