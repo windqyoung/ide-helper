@@ -13,10 +13,22 @@ class ParameterCode extends CodeBase implements ToCodeInterface
         }
 
         return $code
+            . $this->getModifier()
             . $this->getType()
             . $this->getName()
             . $this->getDefaultAssign()
         ;
+    }
+
+    protected function getModifier()
+    {
+        $ref = $this->getRef();
+        if (method_exists($ref, 'isPromoted') && $ref->isPromoted()) {
+            $refProp = $ref->getDeclaringClass()->getProperty($ref->getName());
+            return (new PropertyCode($refProp))->getModifier();
+        }
+
+        return '';
     }
 
     private function getName()
@@ -78,7 +90,7 @@ class ParameterCode extends CodeBase implements ToCodeInterface
 
         if ($ref->isDefaultValueAvailable()) {
             if ($ref->isDefaultValueConstant()) {
-                $s .= ' = ' . $ref->getDefaultValueConstantName();
+                $s .= ' = \\' . $ref->getDefaultValueConstantName();
             } else {
                 $s .= ' = ' . var_export($ref->getDefaultValue(), true);
             }
