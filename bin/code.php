@@ -13,7 +13,7 @@ error_reporting(E_ALL & ~E_DEPRECATED);
 
 Autoloader::register();
 
-$opts = getopt('p::f::c::e::o::h');
+$opts = getopt('p::f::c::e::o::r::h');
 
 
 if (empty($opts) || isset($opts['h'])) {
@@ -25,7 +25,8 @@ Usage: php code.php [options ...]
     -e<extension>      save extension's classes, interfaces, const,
                             functions, ...
     -o<outputfile>     save code to this file
-    -h                  show this help
+    -r<class regex>    class regex pattern
+    -h                 show this help
 
 HTML;
 
@@ -62,6 +63,19 @@ if (! empty($opts['e'])) {
     foreach ((array) $opts['e'] as $one) {
         $codes[] = new ExtensionCode($e = new ReflectionExtension($one));
         $exts[] = sprintf("%s_%s", $e->getName(), $e->getVersion());
+    }
+}
+
+if (! empty($opts['r'])) {
+    $pat = $opts['r'];
+    if ($pat[0] != '#') {
+        $pat = '#' . $pat . '#';
+    }
+    $allClasses = array_merge(get_declared_classes(), get_declared_interfaces(), get_declared_traits());
+    foreach ($allClasses as $c) {
+        if (preg_match($pat, $c)) {
+            $codes[] = new ClassCode(new ReflectionClass($c));
+        }
     }
 }
 
