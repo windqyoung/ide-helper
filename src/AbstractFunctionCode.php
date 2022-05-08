@@ -118,7 +118,28 @@ abstract class AbstractFunctionCode extends CodeBase
             return '';
         }
 
-        return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "return null;\n";
+        $rt = 'null';
+
+        if ($this->hasReturnType('bool')) {
+            $rt = 'true';
+        }
+        else if ($this->hasReturnType('false')) {
+            $rt = 'false';
+        }
+        else if ($this->hasReturnType('string')) {
+            $rt = '""';
+        }
+        else if ($this->hasReturnType('int')) {
+            $rt = '1';
+        }
+        else if ($this->hasReturnType('array')) {
+            $rt = '[]';
+        }
+        else if ($this->hasReturnType('static')) {
+            $rt = '$this';
+        }
+
+        return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "\$rt = $rt; return \$rt;\n";
     }
 
     public function getDocCommentSign($pre, $withAtProperty = true, $withAtSee = true)
