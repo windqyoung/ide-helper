@@ -25,7 +25,7 @@ Usage: php code.php [options ...]
     -e<extension>      save extension's classes, interfaces, const,
                             functions, ...
     -o<outputfile>     save code to this file
-    -r<class regex>    class regex pattern
+    -r<class regex>    class regex pattern, use `#` to quote
     -h                 show this help
 
 HTML;
