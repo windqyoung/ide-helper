@@ -8,7 +8,7 @@ use Reflection;
 class CodeBase
 {
     /**
-     * @var \ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionFunction|\ReflectionParameter|\ReflectionExtension|\ReflectionAttribute|\ReflectionAttribute[]|\ReflectionParameter[]
+     * @var \ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionFunction|\ReflectionParameter|\ReflectionExtension|\ReflectionAttribute|\ReflectionAttribute[]|\ReflectionParameter[]|\ReflectionEnum
      */
     private $ref;
 
@@ -157,7 +157,7 @@ class CodeBase
             return $one;
         }, explode("\n", $cmt)));
 
-        return $cmtFmt . "\n";
+        return $cmtFmt;
     }
 
     public function wrapNamespace($code)
