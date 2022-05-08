@@ -35,10 +35,13 @@ class TypeCode extends CodeBase implements ToCodeInterface
         $typeStr = ltrim($typeStr, '\\');
 
         // php8 mixed不允许和？同用
-        if ($type && $typeStr !== 'mixed' && $type->allowsNull()) {
+        if ($type && $typeStr !== 'mixed' && $typeStr !== 'null' && $type->allowsNull()) {
             $ts .= '?';
         }
-        if ($type && ! $type->isBuiltin()) {
+        if ($typeStr == 'static' || $typeStr == 'self') {
+            // 这两个, 不特殊处理
+        }
+        else if ($type && ! $type->isBuiltin()) {
             $ts .= '\\';
         }
 
@@ -52,7 +55,7 @@ class TypeCode extends CodeBase implements ToCodeInterface
      */
     private function getMultiTypeString($type, $glue)
     {
-        return implode($glue, array_map(fn($one) => '\\' . $one, $type->getTypes())) . ' ';
+        return implode($glue, array_map(fn($one) => trim($this->getNamedTypeString($one)), $type->getTypes())) . ' ';
     }
 
     public function hasType($typeName)
