@@ -2,9 +2,18 @@
 
 
 namespace Wqy\IdeHelper;
+use ReflectionEnum;
 
 class ClassCode extends CodeBase implements ToCodeInterface
 {
+    public function __construct($ref, $options = [])
+    {
+        if ($this->isEnum($ref)) {
+            $ref = new ReflectionEnum($ref->getName());
+        }
+        parent::__construct($ref, $options);
+    }
+
     public function toCode()
     {
         $code = $this->toClassCode();
@@ -20,6 +29,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
             . $pre
             . $this->getClassKeyword()
             . $this->getShortName()
+            . $this->getEnumBackingType()
             . $this->getExtends()
             . $this->getImplements()
             . "\n$pre{\n"
@@ -28,9 +38,21 @@ class ClassCode extends CodeBase implements ToCodeInterface
         ;
     }
 
+    private function getEnumBackingType()
+    {
+        $ref = $this->getRef();
+        if ($ref instanceof ReflectionEnum && $ref->isEnum()) {
+            return ' : ' . $ref->getBackingType();
+        }
+    }
+
     private function getClassKeyword()
     {
         $ref = $this->getRef();
+
+        if ($this->isEnum($ref)) {
+            return 'enum ';
+        }
 
         if ($ref->isInterface()) {
             return 'interface ';
@@ -71,7 +93,10 @@ class ClassCode extends CodeBase implements ToCodeInterface
 
         // fix bug
         // class Traversable can't implements
-        $imps = array_filter($impsRaw, function ($x) { return $x !== 'Traversable'; });
+        // 枚举接口不需要实现
+        $imps = array_filter($impsRaw, function ($x) {
+            return !in_array($x, [ 'Traversable', 'UnitEnum', 'BackedEnum' ]);
+        });
 
         if (! $imps) {
             return '';
@@ -86,6 +111,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
     private function toClassBody()
     {
         return $this->getTraits()
+            . $this->getEnumCases()
             . $this->getConstants()
             . $this->getProperties()
             . $this->getMethods()
@@ -107,10 +133,21 @@ class ClassCode extends CodeBase implements ToCodeInterface
     }
     private function getConstants()
     {
-        $cons = $this->getRef()->getConstants();
+        $ref = $this->getRef();
+
+        $cons = $ref->getConstants();
 
         if (! $cons) {
             return '';
+        }
+
+        // 过滤掉枚举常量
+        if ($this->isEnum($ref)) {
+            foreach ($cons as $k => $v) {
+                if ($ref->hasCase($k)) {
+                    unset($cons[$k]);
+                }
+            }
         }
 
         return implode("\n", array_filter(array_map(function ($name) {
@@ -140,6 +177,12 @@ class ClassCode extends CodeBase implements ToCodeInterface
         $cls = $ref->getName();
 
         return implode("\n", array_filter(array_map(function (\ReflectionProperty $one) use ($defs, $cls) {
+
+            // 枚举不得包含属属
+            if ($this->isEnum($one->getDeclaringClass())) {
+                return '';
+            }
+
             return $this->getClassPropertyCode($one, $cls, $defs);
         }, $props))) . "\n\n";
     }
@@ -176,11 +219,34 @@ class ClassCode extends CodeBase implements ToCodeInterface
 
         return implode("\n", array_filter(array_map(function (\ReflectionMethod $one) use ($cls) {
 
+            if ($this->isEnum($one->getDeclaringClass()) && in_array($one->getName(), ['cases', 'from', 'tryFrom'])) {
+                return '';
+            }
+
             $c = new MethodCode($one, $this->getOptions());
             $c->setDeclaringClass($cls, true);
             $c->setLevel($this->getLevel() + 1);
             return $c->toCode();
 
         }, $mds)));
+    }
+
+    private function getEnumCases()
+    {
+        $ref = $this->getRef();
+        if (! $this->isEnum($ref)) {
+            return '';
+        }
+
+        return implode("\n", array_filter(array_map(function ($case) {
+            $code = new EnumCaseCode($case, $this->getOptions());
+            $code->setLevel($this->getLevel() + 1);
+            return $code->toCode();
+        }, $ref->getCases()))) . "\n\n";
+    }
+
+    private function isEnum($ref)
+    {
+        return method_exists($ref, 'isEnum') && $ref->isEnum();
     }
 }
