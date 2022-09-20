@@ -118,28 +118,11 @@ abstract class AbstractFunctionCode extends CodeBase
             return '';
         }
 
-        $rt = 'null';
 
-        if ($this->hasReturnType('bool')) {
-            $rt = 'true';
-        }
-        else if ($this->hasReturnType('false')) {
-            $rt = 'false';
-        }
-        else if ($this->hasReturnType('string')) {
-            $rt = '""';
-        }
-        else if ($this->hasReturnType('int')) {
-            $rt = '1';
-        }
-        else if ($this->hasReturnType('array')) {
-            $rt = '[]';
-        }
-        else if ($this->hasReturnType('static')) {
-            $rt = '$this';
-        }
+        $rt = $this->getReturnVarValur();
 
-        return "\n" . $this->getPrefixSpaces($this->getLevel() + 1) . "\$rt = $rt; return \$rt;\n";
+        $space = $this->getPrefixSpaces($this->getLevel() + 1);
+        return "\n$space\$rt = $rt;\n{$space}return \$rt;\n";
     }
 
     public function getDocCommentSign($pre, $withAtProperty = true, $withAtSee = true)
@@ -181,5 +164,34 @@ abstract class AbstractFunctionCode extends CodeBase
         catch (\Throwable $e) {
             return '';
         }
+    }
+
+    private function getReturnVarValur()
+    {
+        $rt = 'null';
+
+        if ($this->hasReturnType('bool')) {
+            $rt = 'true';
+        }
+        else if ($this->hasReturnType('false')) {
+            $rt = 'false';
+        }
+        else if ($this->hasReturnType('string')) {
+            $rt = '""';
+        }
+        else if ($this->hasReturnType('int')) {
+            $rt = '1';
+        }
+        else if ($this->hasReturnType('float')) {
+            $rt = '0.0';
+        }
+        else if ($this->hasReturnType('array')) {
+            $rt = '[]';
+        }
+        else if ($this->hasReturnType('static')) {
+            $rt = '$this';
+        }
+
+        return $rt;
     }
 }
