@@ -230,4 +230,9 @@ class CodeBase
 
         return (new AttributeArrayCode($this->ref->getAttributes(), $this->getOptions()))->toCode();
     }
+
+    public function isStatic()
+    {
+        return method_exists($this->getRef(), 'isStatic') && $this->getRef()->isStatic();
+    }
 }
