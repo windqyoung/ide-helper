@@ -188,7 +188,7 @@ abstract class AbstractFunctionCode extends CodeBase
         else if ($this->hasReturnType('array')) {
             $rt = '[]';
         }
-        else if ($this->hasReturnType('static')) {
+        else if (! $this->isStatic() && $this->hasReturnType('static')) {
             $rt = '$this';
         }
 
