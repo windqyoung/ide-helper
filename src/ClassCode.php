@@ -102,6 +102,10 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return '';
         }
 
+        usort($imps, function ($a, $b) {
+            return in_array($a, class_implements($b)) ? -1 : 1;
+        });
+
         return ($ref->isInterface() ? ' extends ' : ' implements ')
             . implode(', ', array_map(function ($one) {
                 return '\\' . $one;
