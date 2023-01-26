@@ -2,11 +2,9 @@
 生成扩展里面的类,函数,常量代码, 让ide能自动完成.
 
 # 用法示例
-# 生成福尔康框架以及mongodb扩展的提示文件
+以下为生成的 Swow扩展 `Swow\Coroutine` 类
 php bin\code.php -eswow
 
-
-以下为生成的 Swow扩展 `Swow\Coroutine` 类
 
 ```php
 <?php
