@@ -67,7 +67,7 @@ class ClassCode extends CodeBase implements ToCodeInterface
         if ($ref->isAbstract()) {
             $code = 'abstract ' . $code;
         }
-        if ($ref->isFinal()) {
+        else if ($ref->isFinal()) {
             $code = 'final ' . $code;
         }
 
