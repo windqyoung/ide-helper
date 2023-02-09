@@ -12,7 +12,7 @@ class Autoloader
     public static function autoload($cls)
     {
         if (strpos($cls, 'Wqy\IdeHelper\\') === 0) {
-            $base = substr($cls, 14);
+            $base = str_replace('\\', '/', substr($cls, 14));
             $file = __DIR__ . '/' . $base . '.php';
             if (is_file($file)) {
                 require $file;
