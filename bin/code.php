@@ -8,7 +8,12 @@ use Wqy\IdeHelper\ExtensionCode;
 use Wqy\IdeHelper\Autoloader;
 
 
-// 兼容swoole windows, 在swoole中直接写 __DIR__ 有问题.
+// 兼容swoole windows, 在swoole中直接使用 __DIR__ 有问题.
+
+// 如果在命令行中提供类似   `.\code.php` `..\xxx\code.php`,
+// swoole不会把 `\` 转换成 `/`, 造成第一个入口文件的路径错误.
+// 对非入口文件, 不会报错
+
 $file = dirname(str_replace('\\', DIRECTORY_SEPARATOR, __FILE__)) . '/../src/Autoloader.php';
 
 require $file;
