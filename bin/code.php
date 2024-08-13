@@ -7,7 +7,11 @@ use Wqy\IdeHelper\ExtensionCode;
 
 use Wqy\IdeHelper\Autoloader;
 
-require __DIR__ . '/../src/Autoloader.php';
+
+// 兼容swoole windows, 在swoole中直接写 __DIR__ 有问题.
+$file = dirname(str_replace('\\', DIRECTORY_SEPARATOR, __FILE__)) . '/../src/Autoloader.php';
+
+require $file;
 
 error_reporting(E_ALL & ~E_DEPRECATED);
 
