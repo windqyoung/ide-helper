@@ -19,15 +19,36 @@ class ClassConstantCode extends CodeBase implements ToCodeInterface
             return '';
         }
 
+        $value = $this->exportValue($this->getRef()->getValue());
+
         return $this->getDocComment()
             . $this->getAttributesString()
             . $this->getPrefixSpaces()
             . $this->getModifier()
             . 'const '
+            . $this->getConstantTypeString()
             . $this->getRef()->getName()
             . ' = '
-            . var_export($this->getRef()->getValue(), true)
+            . (is_null($value) ? 'null' : $value)
             . ";\n"
         ;
+    }
+
+    /**
+     * php8.3 类常量类型: `const string FOO = 'x';`
+     *
+     * @return string
+     */
+    private function getConstantTypeString()
+    {
+        $ref = $this->getRef();
+
+        if (! method_exists($ref, 'hasType') || ! $ref->hasType()) {
+            return '';
+        }
+
+        $type = $ref->getType();
+
+        return $type ? $this->getTypeString($type) : '';
     }
 }
