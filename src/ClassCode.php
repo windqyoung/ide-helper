@@ -41,9 +41,13 @@ class ClassCode extends CodeBase implements ToCodeInterface
     private function getEnumBackingType()
     {
         $ref = $this->getRef();
-        if ($ref instanceof ReflectionEnum && $ref->isEnum()) {
+
+        // 纯枚举(pure enum)没有 backing type, 不能输出 `: `
+        if ($ref instanceof ReflectionEnum && $ref->isEnum() && $ref->getBackingType()) {
             return ' : ' . $ref->getBackingType();
         }
+
+        return '';
     }
 
     private function getClassKeyword()
@@ -62,16 +66,21 @@ class ClassCode extends CodeBase implements ToCodeInterface
             return 'trait ';
         }
 
-        $code = 'class ';
+        $code = '';
 
         if ($ref->isAbstract()) {
-            $code = 'abstract ' . $code;
+            $code .= 'abstract ';
         }
         else if ($ref->isFinal()) {
-            $code = 'final ' . $code;
+            $code .= 'final ';
         }
 
-        return $code;
+        // php8.2 readonly class, 必须紧挨着 class 关键字
+        if (method_exists($ref, 'isReadOnly') && $ref->isReadOnly()) {
+            $code .= 'readonly ';
+        }
+
+        return $code . 'class ';
     }
 
     private function getExtends()
