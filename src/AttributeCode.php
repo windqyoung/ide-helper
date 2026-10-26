@@ -78,21 +78,31 @@ class AttributeCode extends CodeBase implements ToCodeInterface
             $code .= $this->getPrefixSpaces();
         }
 
-        $code .= "#[{$name}(";
+        $code .= '#[' . $name;
 
         $argsArray = [];
         foreach ($ref->getArguments() as $k => $v) {
+            $export = $this->exportValue($v);
+            if (is_null($export)) {
+                // 无法还原的参数(比如对象)直接跳过
+                continue;
+            }
+
             $as = '';
             if (is_string($k)) {
+                // php8 命名参数
                 $as .= $k . ': ';
             }
-            $as .= var_export($v, true);
+            $as .= $export;
             $argsArray[] = $as;
         }
 
-        $code .= implode(', ', $argsArray);
+        // 无参数时省略括号
+        if ($argsArray) {
+            $code .= '(' . implode(', ', $argsArray) . ')';
+        }
 
-        $code .=")]";
+        $code .= ']';
 
         if ($this->postNewline) {
             $code .= "\n";
