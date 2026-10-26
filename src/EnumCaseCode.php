@@ -28,8 +28,10 @@ class EnumCaseCode extends CodeBase implements ToCodeInterface
     {
         $ref = $this->getRef();
         if ($ref instanceof \ReflectionEnumBackedCase) {
-            return ' = ' . var_export($ref->getBackingValue(), true);
+            return ' = ' . $this->exportValue($ref->getBackingValue());
         }
+
+        return '';
     }
 
 }
