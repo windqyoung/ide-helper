@@ -118,17 +118,71 @@ class CodeBase
 
     protected function getDefaultAssign()
     {
-        if (method_exists($ref = $this->getRef(), 'getDefaultValue')) {
-            $def = $ref->getDefaultValue();
+        $ref = $this->getRef();
 
-            // 如果是null, 不赋值
-            if (is_null($def)) {
+        if (method_exists($ref, 'hasDefaultValue')) {
+            // php 8.3+: 没有默认值时调用 getDefaultValue 会抛弃用提示
+            if (! $ref->hasDefaultValue()) {
                 return '';
             }
-            return ' = ' . var_export($ref->getDefaultValue(), true);
         }
 
-        return is_null($this->defaultValue) ? '' : (' = ' . var_export($this->defaultValue, true));
+        if (method_exists($ref, 'getDefaultValue')) {
+            $def = $ref->getDefaultValue();
+        }
+        else {
+            $def = $this->defaultValue;
+        }
+
+        // 如果是null, 不赋值
+        if (is_null($def)) {
+            return '';
+        }
+
+        $export = $this->exportValue($def);
+
+        // 无法还原的默认值(比如 new Foo()), 不赋值
+        return is_null($export) ? '' : (' = ' . $export);
+    }
+
+    /**
+     * 把值导出成 php 代码.
+     *
+     * 相比 var_export, 这里额外处理了:
+     * - 枚举(php 8.1): 导出为 `\Foo::BAR`
+     * - 对象(php 8.1 `new` 初始化语法): var_export 会生成非法的 `Foo::__set_state()`,
+     *   这种情况返回 null, 由调用方决定如何降级.
+     *
+     * @param mixed $value
+     * @return string|null null 表示无法还原
+     */
+    public function exportValue($value)
+    {
+        if (is_array($value)) {
+            $items = [];
+            $index = 0;
+
+            foreach ($value as $k => $v) {
+                $one = $this->exportValue($v);
+                if (is_null($one)) {
+                    return null;
+                }
+                // 连续的数字键可以省略
+                $items[] = $k === $index++ ? $one : var_export($k, true) . ' => ' . $one;
+            }
+
+            return '[' . implode(', ', $items) . ']';
+        }
+
+        if (is_object($value)) {
+            // 枚举可以用 `\Foo::BAR` 还原
+            if ($value instanceof \UnitEnum) {
+                return '\\' . get_class($value) . '::' . $value->name;
+            }
+            return null;
+        }
+
+        return var_export($value, true);
     }
 
     public function getDocComment()
@@ -197,6 +251,9 @@ class CodeBase
         if (preg_match('/^\d/', $name)) {
             $name = '___DIGIT_' . $name;
         }
+
+        // 匿名类的短名形如 `file.php:1$3`, 属于非法标识符, 替换掉
+        $name = preg_replace('/[^a-zA-Z0-9_\x80-\xff]/', '_', $name);
 
         return $name;
     }
