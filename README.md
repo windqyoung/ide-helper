@@ -6,6 +6,20 @@
 php bin\code.php -eswow
 
 
+# web 入口
+`web/code.php` 与 `bin/code.php` 功能一致, 参数改成 GET 传参:
+
+```bash
+php -S 127.0.0.1:8080 -t .
+```
+
+- `code.php?e=swow` 等价于 `php bin/code.php -eswow`
+- `code.php?c=ArrayObject&c=ArrayIterator&o=array.php` 等价于 `-c... -o...`, `o` 以附件形式下载(不写服务器文件)
+- `code.php?r=^Redis&format=json` 用正则匹配类, 以 json 返回
+- `code.php` 或 `code.php?h=1` 显示帮助
+- `p`(预包含文件)会执行任意 php 代码, 只允许本机访问
+
+
 ```php
 <?php
 
