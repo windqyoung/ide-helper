@@ -23,7 +23,9 @@ class ConstantCode extends CodeBase implements ToCodeInterface
 
     private function toDefineCode()
     {
+        $value = $this->exportValue($this->value);
+
         return sprintf("%sdefine('%s', %s);\n", $this->getPrefixSpaces(),
-            $this->name, var_export($this->value, true));
+            $this->name, is_null($value) ? 'null' : $value);
     }
 }
