@@ -14,8 +14,9 @@ abstract class AbstractFunctionCode extends CodeBase
         $code = $this->getDocComment()
             . $this->getAttributesString()
             . $pre . $this->getModifier()
-            . ($ref->returnsReference() ? '& ' : '')
             . 'function '
+            // 引用返回: function &foo()
+            . ($ref->returnsReference() ? '&' : '')
             . $this->getShortName()
             . '('
             . $this->getParameters()
@@ -38,14 +39,9 @@ abstract class AbstractFunctionCode extends CodeBase
 
     private function hasReturnType($typeName = null)
     {
-        $ref = $this->getRef();
-        // 无方法
-        if (! method_exists($ref, 'hasReturnType')) {
-            return false;
-        }
+        $type = $this->getReturnTypeRef();
 
-        // 无返回
-        if (! $ref->hasReturnType() ) {
+        if (! $type) {
             return false;
         }
 
@@ -54,8 +50,36 @@ abstract class AbstractFunctionCode extends CodeBase
             return true;
         }
 
-        return (new TypeCode($ref->getReturnType()))->hasType($typeName);
+        return (new TypeCode($type))->hasType($typeName);
 
+    }
+
+    /**
+     * 取返回类型.
+     *
+     * php 8.1 起, 内部函数的返回类型是"暂定(tentative)"的,
+     * 此时 getReturnType() 返回 null, 需要回落到 getTentativeReturnType(),
+     * 否则 ArrayObject::count() 这类方法会丢失返回类型.
+     *
+     * @return \ReflectionType|null
+     */
+    private function getReturnTypeRef()
+    {
+        $ref = $this->getRef();
+
+        if (! method_exists($ref, 'hasReturnType')) {
+            return null;
+        }
+
+        if ($ref->hasReturnType()) {
+            return $ref->getReturnType();
+        }
+
+        if (method_exists($ref, 'hasTentativeReturnType') && $ref->hasTentativeReturnType()) {
+            return $ref->getTentativeReturnType();
+        }
+
+        return null;
     }
 
     private function getReturnType()
@@ -66,11 +90,7 @@ abstract class AbstractFunctionCode extends CodeBase
 
     private function getReturnTypeString()
     {
-        if (! $this->hasReturnType()) {
-            return '';
-        }
-
-        $type = $this->getRef()->getReturnType();
+        $type = $this->getReturnTypeRef();
 
         if (! $type) {
             return '';
@@ -90,7 +110,13 @@ abstract class AbstractFunctionCode extends CodeBase
 
         $s = '';
         foreach ($stVars as $name => $val) {
-            $s .= "\n" . $pre . 'static $' . $name . ' = ' . var_export($val, true) . ";\n";
+            $export = $this->exportValue($val);
+            if (is_null($export)) {
+                // 无法还原的值(比如对象), 只声明变量
+                $s .= "\n" . $pre . 'static $' . $name . ";\n";
+                continue;
+            }
+            $s .= "\n" . $pre . 'static $' . $name . ' = ' . $export . ";\n";
         }
 
         return $s;
@@ -115,6 +141,10 @@ abstract class AbstractFunctionCode extends CodeBase
             return '';
         }
         if ($this->hasReturnType('void')) {
+            return '';
+        }
+        // php8.1 never: 函数里出现 return 语句是编译期致命错误
+        if ($this->hasReturnType('never')) {
             return '';
         }
 
@@ -171,6 +201,9 @@ abstract class AbstractFunctionCode extends CodeBase
         $rt = 'null';
 
         if ($this->hasReturnType('bool')) {
+            $rt = 'true';
+        }
+        else if ($this->hasReturnType('true')) {
             $rt = 'true';
         }
         else if ($this->hasReturnType('false')) {
